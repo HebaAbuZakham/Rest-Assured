@@ -1,3 +1,5 @@
+package LoginAPI;
+
 public class LoginRequestBody {
     public static String requestBody(String userName,String password){
         String request ="{\n" +

@@ -1,60 +1,53 @@
-import io.restassured.RestAssured;
+import Base.Base;
+import LoginAPI.LoginPage;
+import MemebrAPI.MemberPage;
+import SignUpAPI.SignUpPage;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class MemberTest extends LoginRequestBody {
-    String URL = "https://sit.maf-dev.auth0.com";
-    private static String devUrl ="https://maf-holding-dev.apigee.net";
-    SignUpRequestBody signupRequestBody = new SignUpRequestBody();
-    LoginRequestBody lgoinRequest = new LoginRequestBody();
+public class MemberTest extends Base {
+
     String userName = "hiba" + Math.floor(Math.random() * 1000) + "@gmail.com";
     String password = "Test1234";
     String email;
-    String FirstName;
+    String firstName;
     String tokenValue;
-    private static String X_API_KEY ="x-api-key";
-    String xApiKey ="GfqP7b2I99sUMkbxGEk5Xk56RscaWRuo";
+    SignUpPage signUpPage = new SignUpPage(); Response signUpResponse;
+    LoginPage loginPage = new LoginPage(); Response loginResponse;
+    MemberPage memberPage = new MemberPage(); Response memberDetails;
     @Test(description = "check status Code and Save the email")
-    public void CheckingSignUpAPI() {
-        RestAssured.baseURI = URL;
-        RequestSpecification httpRequest = RestAssured.given();
-        Response response = httpRequest.header("Content-Type", "application/json").body(signupRequestBody.requestBody(userName, password)).post("/dbconnections/signup");
-        response.prettyPrint();
-        Assert.assertEquals(response.getStatusCode(), 200);
-        JsonPath jsonPathEvaluators = response.jsonPath();
+    public void checkCreateNewUser() {
+
+       signUpResponse = signUpPage.signUpPost(userName,password);
+        Assert.assertEquals(signUpResponse.getStatusCode(), 200);
+        JsonPath jsonPathEvaluators = signUpResponse.jsonPath();
         email = jsonPathEvaluators.get("email").toString();
         System.out.println(email);
-        FirstName = jsonPathEvaluators.get("user_metadata.firstName").toString();
-        System.out.println(FirstName);
+        firstName = jsonPathEvaluators.get("user_metadata.firstName").toString();
+        System.out.println(firstName);
     }
 
     @Test(description = "check status Code and get access Token")
-    public void LoginAPI() {
-        RestAssured.baseURI = URL;
-        RequestSpecification httpRequest = RestAssured.given();
-        Response response = httpRequest.header("Content-Type", "application/json").body(lgoinRequest.requestBody(email, password)).post("/oauth/token");
-        response.prettyPrint();
-        Assert.assertEquals(response.getStatusCode(), 200);
-        JsonPath jsonPathEvaluators = response.jsonPath();
+    public void checkingDLogin() {
+        loginResponse =loginPage.loginPost(userName,password);
+        loginResponse.prettyPrint();
+        Assert.assertEquals(loginResponse.getStatusCode(), 200);
+        JsonPath jsonPathEvaluators = loginResponse.jsonPath();
         tokenValue = jsonPathEvaluators.get("token_type").toString() + "  "+jsonPathEvaluators.get("access_token").toString();
         System.out.println(tokenValue);
     }
     @Test(description = "check status Code and get access Token")
     public void checkingGetMemberDetails() {
-        RestAssured.baseURI = devUrl;
-        RequestSpecification httpRequest = RestAssured.given();
-        Response response = httpRequest.header(X_API_KEY,xApiKey).header("Authorization",tokenValue).get("/v1/gravity/dk-gravity-memberdetails");
-        response.prettyPrint();
-        Assert.assertEquals(response.getStatusCode(), 200);
-        JsonPath jsonPathEvaluators = response.jsonPath();
-        Assert.assertEquals(FirstName,jsonPathEvaluators.get("first_name").toString());
+        memberDetails = memberPage.getMemberDetails(tokenValue);
+        memberDetails.prettyPrint();
+        Assert.assertEquals(memberDetails.getStatusCode(), 200);
+        JsonPath jsonPathEvaluators = memberDetails.jsonPath();
+        Assert.assertEquals(firstName,jsonPathEvaluators.get("first_name").toString());
         Assert.assertEquals(email,jsonPathEvaluators.get("email_address").toString());
         Assert.assertEquals("BASE",jsonPathEvaluators.get("tier").toString());
         Assert.assertEquals("false",jsonPathEvaluators.get("extra_data.sw_onboarding").toString());
     }
 
 }
-

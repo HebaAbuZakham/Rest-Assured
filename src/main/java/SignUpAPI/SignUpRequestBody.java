@@ -1,3 +1,5 @@
+package SignUpAPI;
+
 public class SignUpRequestBody {
     public static String requestBody(String userName,String password){
         String request="{\n" +
