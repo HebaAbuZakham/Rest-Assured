@@ -38,7 +38,7 @@ public class MemberTest extends Base {
         tokenValue = jsonPathEvaluators.get("token_type").toString() + "  "+jsonPathEvaluators.get("access_token").toString();
         System.out.println(tokenValue);
     }
-    @Test(description = "check status Code and get access Token")
+    @Test(description = "check status Code, first name, email")
     public void checkingGetMemberDetails() {
         memberDetails = memberPage.getMemberDetails(tokenValue);
         memberDetails.prettyPrint();
